@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Image Processor</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        function postDataToEndpoint(endpoint, data) {
+            $.ajax({
+                url: endpoint,
+                type: 'POST',
+                data: data,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.image_url) {
+                        $('#resultImage').attr('src', data.image_url);
+                        $('#resultImage').show();
+                    } else {
+                        alert('Failed to process image.');
+                    }
+                },
+                error: function () {
+                    alert('Error processing the file.');
+                }
+            });
+        }
+        $(document).ready(function () {
+            $('form').on('submit', function (e) {
+                e.preventDefault();  // Prevent the default form submission
+                postDataToEndpoint('/process', new FormData(this));
+                /*
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '/process',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        if (data.image_url) {
+                            $('#resultImage').attr('src', data.image_url);
+                            $('#resultImage').show();
+                        } else {
+                            alert('Failed to process image.');
+                        }
+                    },
+                    error: function () {
+                        alert('Error processing the file.');
+                    }
+                });
+                */
+            });
+            $('input[type="finalize"]').on('click', function (e) {
+                e.preventDefault();  // Prevent the default form submission
+                postDataToEndpoint('/finalize', new FormData(this));
+                /*
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '/finalize',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        if (data.image_url) {
+                            $('#resultImage').attr('src', data.image_url);
+                            $('#resultImage').show();
+                        } else {
+                            alert('Failed to finalize image.');
+                        }
+                    },
+                    error: function () {
+                        alert('Error finalizing the file.');
+                    }
+                });
+                */
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Image Processing Parameters</h1>
+    {% for message in get_flashed_messages() %}
+    <div>{{ message }}</div>
+    {% endfor %}
+    <div>
+        <div style="display:inline-block;">
+            <form action="/process" method="post" enctype="multipart/form-data">
+                <label for="file">Upload image:</label>
+                <input type="file" id="file" name="file" accept=".raf,.cr2,.nef,.dng"><br><br>
+                {% for param in params %}
+                <label>{{ param[0] }}
+                    <input type="range" min="0" max="1" value="{{ param[1] }}" class="slider" id="{{ param[0] }}"
+                        name="{{ param[0] }}" step="0.01">
+                    <!--<input type="text" id="{{ param[0] }}" name="{{ param[0] }}" value="{{ param[1] }}"><br>-->
+                </label><br>
+                {% endfor %}
+                <input type="submit" value="Process Image">
+                <input type="finalize" value="Finalize Image">
+            </form>
+        </div>
+        <div style="display:inline-block;">
+            <img id="resultImage" src="" style="display:none; max-width:100%;" alt="Processed Image">
+        </div>
+    </div>
+</body>
+
+</html>
